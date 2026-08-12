@@ -19,6 +19,6 @@ router.route('/')
   .post(authorize('admin'), createPayment);
 
 router.get('/:id', getPaymentById);
-router.put('/:id/status', authorize('admin'), updatePaymentStatus);
+router.put('/:id/status', authorize('admin', 'member'), updatePaymentStatus);
 
 module.exports = router;

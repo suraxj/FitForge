@@ -131,21 +131,41 @@ const createPayment = async (req, res) => {
 // @access  Private (Admin)
 const updatePaymentStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, paymentMethod } = req.body;
     const payment = await Payment.findById(req.params.id);
 
     if (!payment) {
       return res.status(404).json({ success: false, message: 'Payment record not found' });
     }
 
-    payment.status = status;
+    // Authorization check: Admin can update any payment; Member can update their own payment
+    if (req.user.role === 'member') {
+      const member = await Member.findOne({ user: req.user._id });
+      if (!member || payment.member.toString() !== member._id.toString()) {
+        return res.status(403).json({ success: false, message: 'Not authorized to update this payment' });
+      }
+    }
+
+    if (status) payment.status = status;
+    if (paymentMethod) payment.paymentMethod = paymentMethod;
+
     await payment.save();
 
     if (payment.membership && status === 'paid') {
-      await Membership.findByIdAndUpdate(payment.membership, { paymentStatus: 'paid' });
+      await Membership.findByIdAndUpdate(payment.membership, { paymentStatus: 'paid', status: 'active' });
     }
 
-    return res.json({ success: true, data: payment });
+    const updatedPayment = await Payment.findById(payment._id)
+      .populate({
+        path: 'member',
+        populate: { path: 'user', select: 'name email phone' }
+      })
+      .populate({
+        path: 'membership',
+        populate: { path: 'plan' }
+      });
+
+    return res.json({ success: true, data: updatedPayment });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -163,8 +183,12 @@ const getMyPayments = async (req, res) => {
 
     const payments = await Payment.find({ member: member._id })
       .populate({
+        path: 'member',
+        populate: { path: 'user', select: 'name email phone' }
+      })
+      .populate({
         path: 'membership',
-        populate: { path: 'plan', select: 'name' }
+        populate: { path: 'plan', select: 'name price' }
       })
       .sort({ paymentDate: -1 });
 

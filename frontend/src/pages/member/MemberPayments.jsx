@@ -3,6 +3,7 @@ import { paymentService } from '../../services/paymentService';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
 import StatCard from '../../components/common/StatCard';
+import ReceiptModal from '../../components/modals/ReceiptModal';
 import {
   CreditCard,
   CheckCircle2,
@@ -10,31 +11,57 @@ import {
   AlertCircle,
   FileText,
   DollarSign,
-  Receipt
+  Receipt,
+  ShieldCheck,
+  Zap,
+  ArrowRight
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const MemberPayments = () => {
   const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState([]);
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [selectedReceiptPayment, setSelectedReceiptPayment] = useState(null);
+  const [payModalPayment, setPayModalPayment] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('UPI');
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    const fetchPayments = async () => {
-      setLoading(true);
-      try {
-        const res = await paymentService.getMyPayments();
-        if (res.success) {
-          setPayments(Array.isArray(res.data) ? res.data : []);
-        }
-      } catch (err) {
-        console.error('Error fetching member payments:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPayments();
   }, []);
+
+  const fetchPayments = async () => {
+    setLoading(true);
+    try {
+      const res = await paymentService.getMyPayments();
+      if (res.success) {
+        setPayments(Array.isArray(res.data) ? res.data : []);
+      }
+    } catch (err) {
+      console.error('Error fetching member payments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProcessPayment = async (e) => {
+    e.preventDefault();
+    if (!payModalPayment) return;
+
+    setProcessing(true);
+    try {
+      const res = await paymentService.updateStatus(payModalPayment._id, 'paid', paymentMethod);
+      if (res.success) {
+        toast.success(`Payment of $${payModalPayment.amount} successful via ${paymentMethod}!`);
+        setPayModalPayment(null);
+        fetchPayments();
+      }
+    } catch (err) {
+      toast.error('Payment processing failed. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   if (loading) {
     return <Loader message="Loading payment history..." />;
@@ -55,7 +82,7 @@ const MemberPayments = () => {
       <div>
         <h1 className="text-2xl font-extrabold text-white">Payment & Invoice History</h1>
         <p className="text-xs text-slate-400 mt-1">
-          View billing records, transaction receipts, and payment method details.
+          View billing records, transaction receipts, and settle pending invoices online.
         </p>
       </div>
 
@@ -71,7 +98,7 @@ const MemberPayments = () => {
 
         <StatCard
           title="Total Transactions"
-          value={`${payments.length} Invoices`}
+          value={`${safePayments.length} Invoices`}
           icon={CreditCard}
           subtext="Issued receipts"
           color="amber"
@@ -108,7 +135,7 @@ const MemberPayments = () => {
                   <th className="px-4 py-3">Amount</th>
                   <th className="px-4 py-3">Payment Method</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 rounded-r-xl text-right">Receipt</th>
+                  <th className="px-4 py-3 rounded-r-xl text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -118,16 +145,16 @@ const MemberPayments = () => {
                       #{p._id.slice(-6).toUpperCase()}
                     </td>
                     <td className="px-4 py-3.5 text-slate-300 font-medium">
-                      {new Date(p.createdAt || p.date).toLocaleDateString()}
+                      {new Date(p.paymentDate || p.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3.5 font-bold text-white">
-                      {p.membership?.plan?.name || p.description || 'Gym Membership Fee'}
+                      {p.membership?.plan?.name || p.notes || 'Gym Membership Fee'}
                     </td>
                     <td className="px-4 py-3.5 font-extrabold text-white">
-                      ${p.amount}
+                      ${p.amount?.toFixed(2)}
                     </td>
                     <td className="px-4 py-3.5 text-slate-400 capitalize">
-                      {p.paymentMethod || 'Credit Card'}
+                      {p.paymentMethod || 'Cash'}
                     </td>
                     <td className="px-4 py-3.5">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
@@ -140,14 +167,23 @@ const MemberPayments = () => {
                         {p.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <button
-                        onClick={() => setSelectedInvoice(p)}
-                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                        title="View Invoice"
-                      >
-                        <FileText className="w-4 h-4" />
-                      </button>
+                    <td className="px-4 py-3.5 text-right space-x-2">
+                      {p.status === 'pending' ? (
+                        <button
+                          onClick={() => setPayModalPayment(p)}
+                          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] uppercase transition-all shadow-md"
+                        >
+                          Pay Now
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setSelectedReceiptPayment(p)}
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs inline-flex items-center space-x-1.5 transition-colors"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Receipt</span>
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -165,48 +201,76 @@ const MemberPayments = () => {
         )}
       </div>
 
-      {/* Invoice Receipt Modal */}
-      {selectedInvoice && (
-        <Modal title="Payment Invoice Receipt" onClose={() => setSelectedInvoice(null)}>
-          <div className="space-y-6">
-            <div className="p-4 rounded-xl bg-slate-850 border border-slate-800 space-y-3">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                <span className="text-xs text-slate-400 font-semibold">Invoice No.</span>
-                <span className="font-mono text-xs text-amber-400 font-bold">#{selectedInvoice._id.toUpperCase()}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Transaction Date:</span>
-                <span className="text-white font-medium">{new Date(selectedInvoice.createdAt || selectedInvoice.date).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Payment Method:</span>
-                <span className="text-white font-medium capitalize">{selectedInvoice.paymentMethod || 'Credit Card'}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Status:</span>
-                <span className="font-bold uppercase text-emerald-400">{selectedInvoice.status}</span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex justify-between items-center">
+      {/* Online Payment Modal */}
+      {payModalPayment && (
+        <Modal title="Complete Payment Online" onClose={() => setPayModalPayment(null)} maxWidth="max-w-md">
+          <form onSubmit={handleProcessPayment} className="space-y-5">
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-amber-400">
               <div>
-                <p className="text-xs font-bold text-white">{selectedInvoice.membership?.plan?.name || 'FitForge Membership'}</p>
-                <p className="text-[10px] text-slate-400">Subscription & Gym Access Fee</p>
+                <p className="text-xs font-bold text-white uppercase">{payModalPayment.membership?.plan?.name || 'Gym Plan Invoice'}</p>
+                <p className="text-[10px] text-slate-400">Secure Instant Checkout</p>
               </div>
-              <span className="text-xl font-black text-amber-400">${selectedInvoice.amount}</span>
+              <span className="text-2xl font-black">${payModalPayment.amount?.toFixed(2)}</span>
             </div>
 
-            <div className="pt-4 border-t border-slate-800 text-right">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase text-slate-300">Select Payment Method</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['UPI', 'Card', 'Online'].map((method) => (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setPaymentMethod(method)}
+                    className={`py-2.5 rounded-xl font-bold text-xs border transition-all ${
+                      paymentMethod === method
+                        ? 'bg-amber-500 text-slate-950 border-amber-400'
+                        : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
+                    }`}
+                  >
+                    {method}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 flex items-center space-x-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>256-Bit Encrypted Payment Simulation</span>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-3 border-t border-slate-800">
               <button
-                onClick={() => setSelectedInvoice(null)}
-                className="px-5 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold hover:bg-slate-700"
+                type="button"
+                onClick={() => setPayModalPayment(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700"
               >
-                Close Receipt
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={processing}
+                className="px-6 py-2.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-lg flex items-center space-x-2 transition-all disabled:opacity-50"
+              >
+                {processing ? (
+                  <span>Processing...</span>
+                ) : (
+                  <>
+                    <span>Confirm & Pay ${payModalPayment.amount}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
-          </div>
+          </form>
         </Modal>
       )}
+
+      {/* Printable Receipt Modal */}
+      <ReceiptModal
+        isOpen={Boolean(selectedReceiptPayment)}
+        onClose={() => setSelectedReceiptPayment(null)}
+        payment={selectedReceiptPayment}
+      />
     </div>
   );
 };
