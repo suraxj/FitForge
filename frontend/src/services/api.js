@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+let rawUrl = import.meta.env.VITE_API_URL || '/api';
+
+// Normalize URL: remove trailing slash
+if (rawUrl.endsWith('/')) {
+  rawUrl = rawUrl.slice(0, -1);
+}
+
+// Auto-append /api if missing in environment variable
+const API_BASE_URL = rawUrl.endsWith('/api') ? rawUrl : `${rawUrl}/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -27,7 +35,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear invalid credentials if any
       if (window.location.pathname !== '/login') {
         localStorage.removeItem('fitforge_token');
         localStorage.removeItem('fitforge_user');
