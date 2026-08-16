@@ -1,15 +1,67 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  body {
-    background-color: #0d0620;
-    color: #f1f5f9;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    overflow-x: hidden;
+  html.dark, html.dark body {
+    background-color: #0f172a;
+    color: #f8fafc;
+    font-family: 'Outfit', 'Poppins', sans-serif;
+    overflow-x: clip;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+  html.light, html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-family: 'Outfit', 'Poppins', sans-serif;
+    overflow-x: clip;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Theme Switcher 3D Button Styles */
+.theme-switch-container {
+  display: inline-flex;
+  align-items: center;
+}
+.theme-switch-btn {
+  position: relative;
+  width: 54px;
+  height: 28px;
+  background: #1e293b;
+  border-radius: 9999px;
+  padding: 3px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+}
+html.light .theme-switch-btn {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.theme-switch-thumb {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  border-radius: 50%;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+  color: #ffffff;
+}
+html.light .theme-switch-thumb {
+  transform: translateX(26px);
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
 }
 
 /* Keyframe Animations */
@@ -57,6 +109,130 @@
   animation: shimmer 3s infinite;
 }
 
+/* Typing Animation Keyframes */
+@keyframes typing {
+  0% { width: 0%; visibility: hidden; }
+  100% { width: 100%; }
+}
+@keyframes blink {
+  0%, 100% { border-color: #00d2c4; }
+  50% { border-color: transparent; }
+}
+@keyframes fadeSlideUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Typing Animation Utility Classes */
+.animate-typing {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 4px solid #00d2c4;
+  animation: typing 2.8s steps(30) infinite alternate, blink 0.75s step-end infinite;
+  width: 0;
+}
+.animate-typing-line1 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 4px solid #00d2c4;
+  animation: typing 2.5s steps(25) forwards, blink 0.75s step-end infinite;
+  animation-delay: 0s;
+  width: 0;
+}
+.animate-typing-line2 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 4px solid #a855f7;
+  animation: typing 3s steps(30) forwards, blink 0.75s step-end infinite;
+  animation-delay: 2.8s;
+  width: 0;
+}
+.animate-typing-line3 {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 4px solid #6d28d9;
+  animation: typing 2s steps(20) infinite alternate, blink 0.75s step-end infinite;
+  animation-delay: 5.5s;
+  width: 0;
+}
+.animate-fade-slide-up {
+  animation: fadeSlideUp 1s ease-out forwards;
+  opacity: 0;
+}
+.animate-fade-slide-up-delay {
+  animation: fadeSlideUp 1s ease-out 0.4s forwards;
+  opacity: 0;
+}
+.animate-fade-slide-up-delay-2 {
+  animation: fadeSlideUp 1s ease-out 0.8s forwards;
+  opacity: 0;
+}
+
+/* Staggered Fade-In-Up List Animation */
+@keyframes fade-in-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-item {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fade-in-up 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.stagger-item:nth-child(1) { animation-delay: 0ms; }
+.stagger-item:nth-child(2) { animation-delay: 100ms; }
+.stagger-item:nth-child(3) { animation-delay: 200ms; }
+.stagger-item:nth-child(4) { animation-delay: 300ms; }
+.stagger-item:nth-child(5) { animation-delay: 400ms; }
+.stagger-item:nth-child(6) { animation-delay: 500ms; }
+.stagger-item:nth-child(7) { animation-delay: 600ms; }
+.stagger-item:nth-child(8) { animation-delay: 700ms; }
+
+/* Scroll-triggered: items stay hidden until parent has .in-view */
+.stagger-on-scroll .stagger-item {
+  animation: none;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.stagger-on-scroll.in-view .stagger-item {
+  animation: fade-in-up 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.stagger-on-scroll.in-view .stagger-item:nth-child(1) { animation-delay: 0ms; }
+.stagger-on-scroll.in-view .stagger-item:nth-child(2) { animation-delay: 100ms; }
+.stagger-on-scroll.in-view .stagger-item:nth-child(3) { animation-delay: 200ms; }
+.stagger-on-scroll.in-view .stagger-item:nth-child(4) { animation-delay: 300ms; }
+.stagger-on-scroll.in-view .stagger-item:nth-child(5) { animation-delay: 400ms; }
+.stagger-on-scroll.in-view .stagger-item:nth-child(6) { animation-delay: 500ms; }
+.stagger-on-scroll.in-view .stagger-item:nth-child(7) { animation-delay: 600ms; }
+.stagger-on-scroll.in-view .stagger-item:nth-child(8) { animation-delay: 700ms; }
+
+/* Typing text that only animates once in view */
+.typing-on-scroll .animate-typing {
+  animation: none;
+  width: 0;
+  visibility: hidden;
+}
+.typing-on-scroll.in-view .animate-typing {
+  animation: typing 2.8s steps(30) forwards, blink 0.75s step-end infinite;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-item,
+  .animate-typing,
+  .animate-typing-line1,
+  .animate-typing-line2,
+  .animate-typing-line3 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    width: auto !important;
+    visibility: visible !important;
+  }
+}
+
 /* Palette & Theme Classes */
 .bg-anytime-purple-dark {
   background-color: #190a38;
@@ -72,6 +248,37 @@
 
 .bg-anytime-accent {
   background-color: #6d28d9;
+}
+
+/* Neumorphism Effects */
+.neumorphism-dark {
+  box-shadow:
+    8px 8px 16px rgba(0, 0, 0, 0.4),
+    -4px -4px 12px rgba(109, 40, 217, 0.08);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.neumorphism-dark:hover {
+  box-shadow:
+    10px 10px 20px rgba(0, 0, 0, 0.5),
+    -5px -5px 15px rgba(109, 40, 217, 0.12);
+}
+
+.neumorphism-light {
+  box-shadow:
+    8px 8px 20px rgba(0, 0, 0, 0.06),
+    -6px -6px 16px rgba(255, 255, 255, 0.9);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.neumorphism-light:hover {
+  box-shadow:
+    12px 12px 28px rgba(0, 0, 0, 0.1),
+    -8px -8px 20px rgba(255, 255, 255, 0.95);
+}
+
+.neumorphism-inset-dark {
+  box-shadow:
+    inset 4px 4px 10px rgba(0, 0, 0, 0.5),
+    inset -3px -3px 8px rgba(109, 40, 217, 0.1);
 }
 
 /* Hero Diagonal Graphic Pattern */
@@ -136,4 +343,29 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #6d28d9;
+}
+
+/* Sticky Scroll Showcase Helper Utilities */
+.tabs_height {
+  height: 350vh;
+}
+@media(max-width: 768px) {
+  .tabs_height {
+    height: 400vh;
+  }
+}
+
+.tabs_sticky-wrapper {
+  height: calc(100vh - 6rem);
+  position: -webkit-sticky;
+  position: sticky;
+  top: 5.5rem;
+  z-index: 10;
+}
+
+.tabs_video {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
