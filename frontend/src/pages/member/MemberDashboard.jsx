@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { membershipService } from '../../services/membershipService';
 import { workoutService } from '../../services/workoutService';
@@ -22,11 +22,13 @@ import {
   Sparkles,
   ShieldCheck,
   Phone,
-  MessageCircle
+  MessageCircle,
+  LogOut
 } from 'lucide-react';
 
 const MemberDashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [membership, setMembership] = useState(null);
   const [workoutPlan, setWorkoutPlan] = useState(null);
@@ -74,6 +76,11 @@ const MemberDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   if (loading) {
     return <Loader message="Initializing your FitForge member console..." />;
   }
@@ -109,7 +116,7 @@ const MemberDashboard = () => {
   return (
     <div className="space-y-8 font-['Outfit',sans-serif] text-slate-900 dark:text-slate-100 transition-colors duration-300">
       
-      {/* Welcome Banner */}
+      {/* Welcome Banner with Improved Buttons & Logout */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border border-emerald-500/30 p-6 sm:p-8 shadow-2xl animate__animated animate__backInDown">
         {/* Glow ambient background */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full filter blur-3xl pointer-events-none" />
@@ -117,13 +124,13 @@ const MemberDashboard = () => {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-widest">
+              <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-widest">
                 <Activity className="w-3.5 h-3.5 text-emerald-400" />
                 <span>MEMBER PORTAL</span>
               </div>
-              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700">
+              <div className="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>24/7 Gate Keypass Active</span>
+                <span>24/7 Biometric Gate Active</span>
               </div>
             </div>
 
@@ -131,11 +138,12 @@ const MemberDashboard = () => {
               WELCOME BACK, <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">{user?.name || 'Rohan Sharma'}</span>! 🏋️
             </h1>
             <p className="text-slate-300 text-xs sm:text-sm max-w-xl font-medium leading-relaxed">
-               Delhi I.P. Extension Facility • Track workout routines, log body metrics, and monitor check-ins.
+              Delhi I.P. Extension Facility • Track workout routines, log body metrics, and monitor check-ins.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          {/* Action Buttons: Routine, Metrics, and Prominent Logout Button */}
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/member/workout"
               className="px-6 py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center space-x-2 transition-all transform hover:scale-105"
@@ -145,11 +153,19 @@ const MemberDashboard = () => {
             </Link>
             <Link
               to="/member/progress"
-              className="px-6 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs uppercase tracking-wider border border-slate-700 transition-all flex items-center space-x-2"
+              className="px-6 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs uppercase tracking-wider border border-slate-700 transition-all flex items-center space-x-2 transform hover:scale-105"
             >
               <TrendingUp className="w-4 h-4 text-emerald-400" />
-              <span>LOG BODY METRICS</span>
+              <span>LOG METRICS</span>
             </Link>
+            <button
+              onClick={handleLogout}
+              className="px-5 py-3 rounded-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 hover:text-rose-300 border border-rose-500/40 text-xs font-black uppercase tracking-wider flex items-center space-x-2 transition-all transform hover:scale-105"
+              title="Log out of Member Portal"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>LOGOUT</span>
+            </button>
           </div>
         </div>
       </div>
@@ -357,7 +373,7 @@ const MemberDashboard = () => {
 
             <Link
               to="/member/membership"
-              className="block w-full text-center py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg transition-all"
+              className="block w-full text-center py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg transition-all transform hover:scale-[1.02]"
             >
               MEMBERSHIP RENEWAL & DETAILS
             </Link>
@@ -385,7 +401,7 @@ const MemberDashboard = () => {
               href="https://wa.me/917982746995?text=Hi%20Coach%20Vikram%2C%20I%20have%20a%20question%20regarding%20my%20workout%20plan."
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-full py-2.5 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black uppercase tracking-wider shadow-md transition-all"
+              className="inline-flex items-center justify-center w-full py-2.5 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black uppercase tracking-wider shadow-md transition-all transform hover:scale-[1.02]"
             >
               <MessageCircle className="w-4 h-4 mr-2 fill-white" />
               <span>CHAT WITH COACH VIKRAM</span>
