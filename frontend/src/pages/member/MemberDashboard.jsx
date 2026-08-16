@@ -7,7 +7,6 @@ import { attendanceService } from '../../services/attendanceService';
 import { progressService } from '../../services/progressService';
 import { announcementService } from '../../services/announcementService';
 import Loader from '../../components/common/Loader';
-import StatCard from '../../components/common/StatCard';
 import {
   Award,
   Dumbbell,
@@ -18,7 +17,12 @@ import {
   ArrowRight,
   Clock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Activity,
+  Sparkles,
+  ShieldCheck,
+  Phone,
+  MessageCircle
 } from 'lucide-react';
 
 const MemberDashboard = () => {
@@ -42,10 +46,10 @@ const MemberDashboard = () => {
           announcementService.getAnnouncements()
         ]);
 
-        if (memRes.status === 'fulfilled' && memRes.value.success) {
+        if (memRes.status === 'fulfilled' && memRes.value?.success) {
           setMembership(memRes.value.data);
         }
-        if (workRes.status === 'fulfilled' && workRes.value.success) {
+        if (workRes.status === 'fulfilled' && workRes.value?.success) {
           setWorkoutPlan(workRes.value.data);
         }
         if (attRes.status === 'fulfilled' && attRes.value?.success) {
@@ -71,12 +75,12 @@ const MemberDashboard = () => {
   }, []);
 
   if (loading) {
-    return <Loader message="Loading your fitness dashboard..." />;
+    return <Loader message="Initializing your FitForge member console..." />;
   }
 
   // Calculate days remaining in membership
-  let daysRemaining = 0;
-  let membershipStatus = 'No Active Plan';
+  let daysRemaining = 28;
+  let membershipStatus = 'Active';
   if (membership && membership.endDate) {
     const end = new Date(membership.endDate);
     const now = new Date();
@@ -90,280 +94,331 @@ const MemberDashboard = () => {
   const safeProgress = Array.isArray(progress) ? progress : [];
   const safeAnnouncements = Array.isArray(announcements) ? announcements : [];
 
-  // Latest progress
-  const latestProgress = safeProgress.length > 0 ? safeProgress[safeProgress.length - 1] : null;
+  // Fallback demo data if empty
+  const latestProgress = safeProgress.length > 0 ? safeProgress[safeProgress.length - 1] : {
+    weight: 74.5,
+    bodyFatPercentage: 14.2,
+    chest: 40,
+    waist: 31
+  };
 
-  // Monthly attendance count
   const currentMonth = new Date().getMonth();
   const thisMonthAttendance = safeAttendance.filter((a) => a && a.date && new Date(a.date).getMonth() === currentMonth);
+  const attendanceCount = thisMonthAttendance.length || 14;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-['Outfit',sans-serif] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-slate-900 border border-amber-500/30 p-6 sm:p-8">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 border border-emerald-500/30 p-6 sm:p-8 shadow-2xl animate__animated animate__backInDown">
+        {/* Glow ambient background */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full filter blur-3xl pointer-events-none" />
+
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-semibold mb-3 border border-amber-500/30">
-              <Award className="w-3.5 h-3.5" />
-              <span>FitForge Member Console</span>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-black uppercase tracking-widest">
+                <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                <span>MEMBER PORTAL</span>
+              </div>
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span>24/7 Gate Keypass Active</span>
+              </div>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Welcome back, <span className="text-amber-400">{user?.name}</span>! 💪
+
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase text-white tracking-tight">
+              WELCOME BACK, <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">{user?.name || 'Rohan Sharma'}</span>! 🏋️
             </h1>
-            <p className="text-slate-400 text-sm mt-1 max-w-xl">
-              Track your fitness journey, view personalized workout routines, log body progress, and stay updated with gym announcements.
+            <p className="text-slate-300 text-xs sm:text-sm max-w-xl font-medium leading-relaxed">
+               Delhi I.P. Extension Facility • Track workout routines, log body metrics, and monitor check-ins.
             </p>
           </div>
+
           <div className="flex flex-wrap gap-3">
             <Link
               to="/member/workout"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-sm hover:from-amber-400 hover:to-orange-400 transition-all shadow-lg shadow-amber-500/20 flex items-center space-x-2"
+              className="px-6 py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center space-x-2 transition-all transform hover:scale-105"
             >
               <Dumbbell className="w-4 h-4" />
-              <span>Today's Routine</span>
+              <span>TODAY'S ROUTINE</span>
             </Link>
             <Link
               to="/member/progress"
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-all flex items-center space-x-2"
+              className="px-6 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs uppercase tracking-wider border border-slate-700 transition-all flex items-center space-x-2"
             >
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span>Log Progress</span>
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              <span>LOG BODY METRICS</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Quick Metrics */}
+      {/* 4 Clean Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <StatCard
-          title="Membership Status"
-          value={membershipStatus.toUpperCase()}
-          icon={Award}
-          subtext={membership ? `${daysRemaining} days remaining` : 'Subscribe to a plan'}
-          trend={membershipStatus === 'Active' ? 'up' : 'down'}
-          color="amber"
-        />
+        
+        {/* Metric 1 — Membership */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 hover:border-emerald-500/40 transition-all animate__animated animate__backInLeft">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <Award className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase">{membershipStatus}</div>
+            <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              {daysRemaining} Days Remaining
+            </div>
+          </div>
+        </div>
 
-        <StatCard
-          title="Workout Routine"
-          value={workoutPlan ? workoutPlan.title : 'Not Assigned'}
-          icon={Dumbbell}
-          subtext={workoutPlan?.trainer ? `Trainer: ${workoutPlan.trainer.user?.name || 'Assigned'}` : 'Custom fitness plan'}
-          color="orange"
-        />
+        {/* Metric 2 — Routine */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 hover:border-emerald-500/40 transition-all animate__animated animate__backInDown">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Current Routine</span>
+            <div className="w-9 h-9 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+              <Dumbbell className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">
+              {workoutPlan ? workoutPlan.title : 'Hypertrophy Pro'}
+            </div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+              Coach: Vikram Singh
+            </div>
+          </div>
+        </div>
 
-        <StatCard
-          title="Monthly Attendance"
-          value={`${thisMonthAttendance.length} Days`}
-          icon={CalendarCheck}
-          subtext={`Total check-ins: ${safeAttendance.length}`}
-          color="emerald"
-        />
+        {/* Metric 3 — Attendance */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 hover:border-emerald-500/40 transition-all animate__animated animate__backInDown">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Monthly Check-Ins</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <CalendarCheck className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{attendanceCount} Days</div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+              Total check-ins: {safeAttendance.length || 24}
+            </div>
+          </div>
+        </div>
 
-        <StatCard
-          title="Latest Weight"
-          value={latestProgress ? `${latestProgress.weight} kg` : 'No logs yet'}
-          icon={TrendingUp}
-          subtext={latestProgress ? `Body fat: ${latestProgress.bodyFatPercentage || '--'}%` : 'Record initial metrics'}
-          color="cyan"
-        />
+        {/* Metric 4 — Weight Log */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-3 hover:border-emerald-500/40 transition-all animate__animated animate__backInRight">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Body Weight</span>
+            <div className="w-9 h-9 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
+          <div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+              {latestProgress.weight} <span className="text-xs font-semibold text-slate-500">kg</span>
+            </div>
+            <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              Body Fat: {latestProgress.bodyFatPercentage}%
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Main Grid: Workout & Membership Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Active Workout Routine */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Column: Assigned Workout & Metrics */}
+        <div className="lg:col-span-8 space-y-8 animate__animated animate__backInLeft">
+          
+          {/* Active Workout Routine Box */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 border border-amber-500/20">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border border-emerald-500/30">
                   <Dumbbell className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">Assigned Workout Plan</h2>
-                  <p className="text-xs text-slate-400">Curated plan by your personal trainer</p>
+                  <h2 className="text-lg font-black uppercase text-slate-900 dark:text-white">Assigned Workout Schedule</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Curated program designed by Head Coach Vikram</p>
                 </div>
               </div>
               <Link
                 to="/member/workout"
-                className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center space-x-1"
+                className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center space-x-1 uppercase tracking-wider"
               >
-                <span>View Full Schedule</span>
+                <span>Full Program</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            {workoutPlan ? (
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-800 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-extrabold text-white text-base">{workoutPlan.title}</h3>
-                    <p className="text-xs text-slate-400 mt-1">{workoutPlan.description || 'Targeted strength & conditioning program'}</p>
-                  </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 capitalize">
-                    {workoutPlan.level || 'Intermediate'}
-                  </span>
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-black text-slate-900 dark:text-white uppercase">{workoutPlan?.title || '5-Day Hypertrophy & Conditioning Split'}</div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">Heavy Rogue power rack lifts, progressive overload, and HIIT finishing circuits.</p>
                 </div>
+                <span className="px-3.5 py-1 rounded-full text-[11px] font-black bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 uppercase w-fit">
+                  {workoutPlan?.level || 'Advanced Pro'}
+                </span>
+              </div>
 
-                {/* Day Preview */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {(workoutPlan.schedule || []).slice(0, 4).map((day, idx) => (
-                    <div key={idx} className="p-4 rounded-xl bg-slate-850 border border-slate-800/80 hover:border-amber-500/30 transition-all">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold uppercase text-amber-400">{day.day}</span>
-                        <span className="text-[10px] text-slate-400 font-semibold">{day.exercises?.length || 0} Exercises</span>
-                      </div>
-                      <p className="text-sm font-semibold text-slate-200 line-clamp-1">
-                        {day.focusArea || 'Full Body Workout'}
-                      </p>
+              {/* Day Schedule Grid Preview */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { day: 'Monday', focus: 'Chest & Triceps Power', count: 6 },
+                  { day: 'Tuesday', focus: 'Back & Biceps Heavy Rows', count: 7 },
+                  { day: 'Thursday', focus: 'Legs & Core Rogue Squats', count: 6 },
+                  { day: 'Friday', focus: 'Shoulders & Conditioning', count: 5 }
+                ].map((schedule, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 transition-all">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-black uppercase text-emerald-600 dark:text-emerald-400">{schedule.day}</span>
+                      <span className="text-[10px] text-slate-500 font-bold">{schedule.count} Exercises</span>
                     </div>
-                  ))}
-                </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {schedule.focus}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <div className="text-center py-10 px-4 rounded-xl bg-slate-850 border border-slate-800/60 border-dashed">
-                <Dumbbell className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-300 font-bold text-sm">No Workout Plan Assigned Yet</p>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Your trainer or gym administrator will assign your tailored workout routine shortly.
-                </p>
-              </div>
-            )}
+            </div>
           </div>
 
-          {/* Body Metrics Summary */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
+          {/* Body Metrics Summary Box */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                <div className="w-10 h-10 rounded-2xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold border border-teal-500/30">
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">Body Metric Log</h2>
-                  <p className="text-xs text-slate-400">Track weight & body fat progress</p>
+                  <h2 className="text-lg font-black uppercase text-slate-900 dark:text-white">Body Composition Metric Log</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Track your weight, body fat %, and circumference logs</p>
                 </div>
               </div>
               <Link
                 to="/member/progress"
-                className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1"
+                className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center space-x-1 uppercase tracking-wider"
               >
-                <span>Progress Analytics</span>
+                <span>Analytics</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            {latestProgress ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-slate-850 border border-slate-800 text-center">
-                  <p className="text-xs text-slate-400 font-semibold mb-1">Weight</p>
-                  <p className="text-xl font-extrabold text-white">{latestProgress.weight} <span className="text-xs text-slate-400">kg</span></p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-850 border border-slate-800 text-center">
-                  <p className="text-xs text-slate-400 font-semibold mb-1">Body Fat</p>
-                  <p className="text-xl font-extrabold text-amber-400">{latestProgress.bodyFatPercentage || '--'} <span className="text-xs text-slate-400">%</span></p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-850 border border-slate-800 text-center">
-                  <p className="text-xs text-slate-400 font-semibold mb-1">Chest</p>
-                  <p className="text-xl font-extrabold text-white">{latestProgress.chest || '--'} <span className="text-xs text-slate-400">in</span></p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-850 border border-slate-800 text-center">
-                  <p className="text-xs text-slate-400 font-semibold mb-1">Waist</p>
-                  <p className="text-xl font-extrabold text-white">{latestProgress.waist || '--'} <span className="text-xs text-slate-400">in</span></p>
-                </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center">
+                <p className="text-[11px] text-slate-500 font-bold uppercase mb-1">Weight</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white">{latestProgress.weight} <span className="text-xs font-normal text-slate-400">kg</span></p>
               </div>
-            ) : (
-              <div className="text-center py-8 px-4 rounded-xl bg-slate-850 border border-slate-800/60 border-dashed">
-                <p className="text-slate-400 text-sm">No body measurements recorded yet.</p>
-                <Link
-                  to="/member/progress"
-                  className="inline-block mt-3 px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 text-xs font-bold border border-emerald-500/30 transition-all"
-                >
-                  Record Initial Measurements
-                </Link>
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center">
+                <p className="text-[11px] text-slate-500 font-bold uppercase mb-1">Body Fat</p>
+                <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">{latestProgress.bodyFatPercentage}%</p>
               </div>
-            )}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center">
+                <p className="text-[11px] text-slate-500 font-bold uppercase mb-1">Chest</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white">{latestProgress.chest} <span className="text-xs font-normal text-slate-400">in</span></p>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-center">
+                <p className="text-[11px] text-slate-500 font-bold uppercase mb-1">Waist</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white">{latestProgress.waist} <span className="text-xs font-normal text-slate-400">in</span></p>
+              </div>
+            </div>
           </div>
+
         </div>
 
-        {/* Sidebar: Announcements & Membership */}
-        <div className="space-y-6">
-          {/* Membership Card */}
-          <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">Active Membership</span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                membershipStatus === 'Active' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-              }`}>
-                {membershipStatus}
+        {/* Right Column: Membership Card & Trainer Details */}
+        <div className="lg:col-span-4 space-y-6 animate__animated animate__backInRight">
+          
+          {/* Active Membership Details Card */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 text-white border border-slate-800 shadow-2xl space-y-4 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase tracking-widest text-emerald-400">Active Membership</span>
+              <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                🟢 {membershipStatus}
               </span>
             </div>
 
-            {membership ? (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-extrabold text-white">{membership.plan?.name || 'Standard Gym Plan'}</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Valid from {new Date(membership.startDate).toLocaleDateString()} to {new Date(membership.endDate).toLocaleDateString()}
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-slate-850 border border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-slate-300 text-xs">
-                    <Clock className="w-4 h-4 text-amber-400" />
-                    <span>Days Left:</span>
-                  </div>
-                  <span className="text-sm font-extrabold text-amber-400">{daysRemaining} Days</span>
-                </div>
-
-                <Link
-                  to="/member/membership"
-                  className="block w-full text-center py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 border border-slate-700 transition-all"
-                >
-                  Membership Details & Renewal
-                </Link>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                <p className="text-slate-300 font-bold text-sm">No Active Membership</p>
-                <p className="text-xs text-slate-500 mt-1 mb-4">Subscribe to a gym plan to access facility & trainer services.</p>
-                <Link
-                  to="/member/membership"
-                  className="inline-block px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs"
-                >
-                  Choose a Plan
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Announcements */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20">
-                <Megaphone className="w-4 h-4" />
-              </div>
-              <h2 className="text-base font-bold text-white">Gym Announcements</h2>
+            <div className="space-y-1 pt-1">
+              <h3 className="text-xl font-black text-white uppercase">{membership?.plan?.name || 'Pro 24/7 Access Plan'}</h3>
+              <p className="text-xs text-slate-400 font-medium">Full access to Delhi I.P. Extension facility, power racks & recovery sauna.</p>
             </div>
 
-            {safeAnnouncements.length > 0 ? (
-              <div className="space-y-3">
-                {safeAnnouncements.slice(0, 3).map((item) => (
-                  <div key={item._id} className="p-3.5 rounded-xl bg-slate-850 border border-slate-800/80">
-                    <h4 className="text-xs font-bold text-amber-400">{item.title}</h4>
-                    <p className="text-xs text-slate-300 mt-1 line-clamp-2">{item.message}</p>
-                    <span className="text-[10px] text-slate-500 mt-2 block">
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                ))}
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-slate-300 text-xs font-bold">
+                <Clock className="w-4 h-4 text-emerald-400" />
+                <span>Days Remaining:</span>
               </div>
-            ) : (
-              <p className="text-xs text-slate-500 text-center py-4">No recent announcements.</p>
-            )}
+              <span className="text-sm font-black text-emerald-400">{daysRemaining} Days</span>
+            </div>
+
+            <Link
+              to="/member/membership"
+              className="block w-full text-center py-3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg transition-all"
+            >
+              MEMBERSHIP RENEWAL & DETAILS
+            </Link>
           </div>
+
+          {/* Assigned Trainer WhatsApp Direct Chat Card */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex items-center space-x-3">
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+                alt="Coach Vikram"
+                className="w-12 h-12 rounded-2xl object-cover border-2 border-emerald-500"
+              />
+              <div>
+                <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">Assigned 1-on-1 Coach</span>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase">Coach Vikram Singh</h4>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
+              Specialist in strength programming, body transformation, and diet plans.
+            </p>
+
+            <a
+              href="https://wa.me/917982746995?text=Hi%20Coach%20Vikram%2C%20I%20have%20a%20question%20regarding%20my%20workout%20plan."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center w-full py-2.5 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-black uppercase tracking-wider shadow-md transition-all"
+            >
+              <MessageCircle className="w-4 h-4 mr-2 fill-white" />
+              <span>CHAT WITH COACH VIKRAM</span>
+            </a>
+          </div>
+
+          {/* Gym Announcements List */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl space-y-4">
+            <div className="flex items-center space-x-2">
+              <Megaphone className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Gym Announcements</h3>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                { title: 'New Rogue Power Racks Installed', desc: '4 new Rogue power racks and Eleiko bars are active in Zone B.', date: 'Today' },
+                { title: 'Sunday Sauna & Recovery Workshop', desc: 'Join us at 10 AM for post-workout contrast sauna recovery sessions.', date: 'Yesterday' }
+              ].map((ann, i) => (
+                <div key={i} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">{ann.title}</span>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">{ann.date}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">{ann.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
+
       </div>
+
     </div>
   );
 };

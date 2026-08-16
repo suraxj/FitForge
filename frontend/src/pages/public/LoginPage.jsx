@@ -30,21 +30,31 @@ const LoginPage = () => {
       else if (userData.role === 'trainer') navigate('/trainer/dashboard');
       else navigate('/member/dashboard');
     } catch (err) {
-      // Error handled inside AuthContext toast
+      // Toast handled by AuthContext
     } finally {
       setLoading(false);
     }
   };
 
-  const quickFill = (demoEmail, demoPassword) => {
+  const quickLogin = async (demoEmail, demoPassword) => {
     setEmail(demoEmail);
     setPassword(demoPassword);
-    toast.success(`Demo credentials set for ${demoEmail}`);
+    setLoading(true);
+    try {
+      const userData = await login({ email: demoEmail, password: demoPassword });
+      if (userData.role === 'admin') navigate('/admin/dashboard');
+      else if (userData.role === 'trainer') navigate('/trainer/dashboard');
+      else navigate('/member/dashboard');
+    } catch (err) {
+      // Toast handled by AuthContext
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center px-4 py-8 font-['Outfit',sans-serif] bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-      <div className="w-full max-w-md space-y-6 bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+      <div className="w-full max-w-md space-y-6 bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl relative animate__animated animate__backInDown">
         {/* Brand logo header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20 mx-auto">
@@ -54,30 +64,30 @@ const LoginPage = () => {
           <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">Access your role-based fitness management console</p>
         </div>
 
-        {/* 1-Click Demo Login Quick Buttons */}
+        {/* 1-Click Instant Demo Login Buttons */}
         <div className="space-y-2 pt-1">
-          <p className="text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 text-center">⚡ 1-Click Demo Accounts</p>
+          <p className="text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 text-center">⚡ Instant 1-Click Demo Accounts</p>
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              onClick={() => quickFill('admin@gym.com', 'Admin@123')}
-              className="px-2 py-2 rounded-xl text-xs font-extrabold bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 flex items-center justify-center space-x-1 transition-all"
+              onClick={() => quickLogin('admin@gym.com', 'Admin@123')}
+              className="px-2 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 flex items-center justify-center space-x-1 transition-all transform hover:scale-105"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Admin</span>
             </button>
             <button
               type="button"
-              onClick={() => quickFill('trainer@gym.com', 'Trainer@123')}
-              className="px-2 py-2 rounded-xl text-xs font-extrabold bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 flex items-center justify-center space-x-1 transition-all"
+              onClick={() => quickLogin('trainer@gym.com', 'Trainer@123')}
+              className="px-2 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 flex items-center justify-center space-x-1 transition-all transform hover:scale-105"
             >
               <UserCheck className="w-3.5 h-3.5" />
               <span>Trainer</span>
             </button>
             <button
               type="button"
-              onClick={() => quickFill('member@gym.com', 'Member@123')}
-              className="px-2 py-2 rounded-xl text-xs font-extrabold bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 flex items-center justify-center space-x-1 transition-all"
+              onClick={() => quickLogin('member@gym.com', 'Member@123')}
+              className="px-2 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-slate-700 flex items-center justify-center space-x-1 transition-all transform hover:scale-105"
             >
               <User className="w-3.5 h-3.5" />
               <span>Member</span>
