@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Dumbbell, Lock, Mail, ArrowRight, ShieldCheck, UserCheck, User } from 'lucide-react';
@@ -11,6 +11,10 @@ const LoginPage = () => {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();

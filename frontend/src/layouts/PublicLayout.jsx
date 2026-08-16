@@ -21,6 +21,11 @@ const PublicLayout = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Force scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [location.pathname]);
+
   const getDashboardRoute = () => {
     if (!user) return '/login';
     if (user.role === 'admin') return '/admin/dashboard';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Dumbbell, User, Mail, Phone, Lock, ArrowRight } from 'lucide-react';
@@ -13,6 +13,10 @@ const RegisterPage = () => {
 
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleRegister = async (e) => {
     e.preventDefault();
